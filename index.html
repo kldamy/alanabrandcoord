@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alana — Brand Coordinator Onboarding Dashboard</title>
+
+  <!-- ============================================================
+       STYLES
+  ============================================================ -->
+  <style>
+    /* ---------- Reset & Base ---------- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f5f3f0;
+      --surface:   #ffffff;
+      --sidebar-bg:#1c1917;
+      --sidebar-active: #3d2f28;
+      --sidebar-hover:  #2d2420;
+      --accent:    #c9a882;
+      --accent-light: #f0e6d8;
+      --text-primary:   #1c1917;
+      --text-secondary: #78716c;
+      --text-muted:     #a8a29e;
+      --border:    #e7e2dc;
+      --radius:    12px;
+      --radius-sm: 8px;
+      --shadow:    0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+      /* Status badge colours */
+      --badge-not:      #f3f0ec;
+      --badge-not-text: #78716c;
+      --badge-progress: #fef9c3;
+      --badge-progress-text: #854d0e;
+      --badge-done:     #dcfce7;
+      --badge-done-text:#166534;
+
+      /* Section accent tints */
+      --daily-tint:   #fef9f4;
+      --weekly-tint:  #f6f0fa;
+      --monthly-tint: #f0f7ff;
+      --adhoc-tint:   #f5fdf5;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-primary);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ---------- Layout Shell ---------- */
+    .shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---------- Sidebar ---------- */
+    .sidebar {
+      width: 240px;
+      min-width: 240px;
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 28px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .sidebar-logo {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .sidebar-subtitle {
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      font-weight: 400;
+    }
+
+    .sidebar-nav {
+      padding: 16px 12px;
+      flex: 1;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      padding: 0 8px;
+      margin-bottom: 6px;
+      margin-top: 8px;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
+      position: relative;
+    }
+
+    .nav-btn .nav-icon {
+      font-size: 15px;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .nav-btn .nav-progress-mini {
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.07);
+      padding: 1px 6px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+
+    .nav-btn:hover {
+      background: var(--sidebar-hover);
+      color: rgba(255,255,255,0.9);
+    }
+
+    .nav-btn.active {
+      background: var(--sidebar-active);
+      color: #fff;
+    }
+
+    .nav-btn.active .nav-progress-mini {
+      color: var(--accent);
+      background: rgba(201,168,130,0.15);
+    }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .sidebar-footer-text {
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+    }
+
+    /* ---------- Main Content ---------- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---------- Top Bar ---------- */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex-shrink: 0;
+    }
+
+    .topbar-spacer { flex: 1; }
+
+    /* Search */
+    .search-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .search-wrap .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .search-input {
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 7px 14px 7px 32px;
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--bg);
+      width: 220px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(201,168,130,0.15);
+    }
+
+    /* Filter buttons */
+    .filter-group {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .filter-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--bg);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ---------- Content Area ---------- */
+    .content {
+      padding: 28px 32px 40px;
+      max-width: 960px;
+      width: 100%;
+    }
+
+    /* ---------- Summary Card ---------- */
+    .summary-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .summary-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      min-width: 70px;
+    }
+
+    .summary-stat-number {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .summary-stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .summary-divider {
+      width: 1px;
+      height: 36px;
+      background: var(--border);
+    }
+
+    .summary-ring-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .summary-ring-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ---------- Progress Bar Header ---------- */
+    .tab-header {
+      margin-bottom: 20px;
+    }
+
+    .tab-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      gap: 12px;
+    }
+
+    .tab-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .tab-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .reset-btn {
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .reset-btn:hover {
+      border-color: #ef4444;
+      color: #ef4444;
+      background: #fef2f2;
+    }
+
+    .progress-bar-wrap {
+      background: var(--border);
+      border-radius: 20px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #d4956a);
+      border-radius: 20px;
+      transition: width 0.4s ease;
+    }
+
+    .progress-label {
+      margin-top: 5px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ---------- Section Group (Recurring) ---------- */
+    .section-group {
+      margin-bottom: 28px;
+    }
+
+    .section-group-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .section-group-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot-daily   { background: #f97316; }
+    .dot-weekly  { background: #a855f7; }
+    .dot-monthly { background: #3b82f6; }
+    .dot-adhoc   { background: #22c55e; }
+
+    .section-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .section-group-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--border);
+      padding: 1px 7px;
+      border-radius: 20px;
+      margin-left: auto;
+    }
+
+    /* ---------- Section Group (Onboarding phase) ---------- */
+    .phase-group {
+      margin-bottom: 28px;
+    }
+
+    .phase-group-header {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ---------- Task Card ---------- */
+    .task-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.15s, border-color 0.15s, opacity 0.15s;
+      cursor: default;
+    }
+
+    .task-card:hover {
+      box-shadow: var(--shadow);
+      border-color: #d8d0c8;
+    }
+
+    .task-card.is-complete {
+      opacity: 0.7;
+    }
+
+    .task-card.is-complete .task-title {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* Checkbox */
+    .task-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 5px;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 1px;
+      position: relative;
+      transition: all 0.15s;
+      background: var(--surface);
+    }
+
+    .task-checkbox:hover {
+      border-color: var(--accent);
+    }
+
+    .task-checkbox:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .task-checkbox:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 6px;
+      height: 10px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    /* Task body */
+    .task-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .task-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.4;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+      line-height: 1.5;
+    }
+
+    .task-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .task-owner {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    /* Status badge */
+    .status-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 9px;
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+      transition: all 0.15s;
+    }
+
+    .status-badge.not-started {
+      background: var(--badge-not);
+      color: var(--badge-not-text);
+    }
+
+    .status-badge.in-progress {
+      background: var(--badge-progress);
+      color: var(--badge-progress-text);
+    }
+
+    .status-badge.complete {
+      background: var(--badge-done);
+      color: var(--badge-done-text);
+    }
+
+    /* Recurring tint cards */
+    .tint-daily   .task-card { border-left: 3px solid #f97316; }
+    .tint-weekly  .task-card { border-left: 3px solid #a855f7; }
+    .tint-monthly .task-card { border-left: 3px solid #3b82f6; }
+    .tint-adhoc   .task-card { border-left: 3px solid #22c55e; }
+
+    /* ---------- Notes Section ---------- */
+    .notes-section {
+      margin-top: 32px;
+    }
+
+    .notes-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .notes-textarea {
+      width: 100%;
+      min-height: 100px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--text-primary);
+      font-family: var(--font);
+      background: var(--surface);
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      line-height: 1.6;
+    }
+
+    .notes-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(201,168,130,0.12);
+    }
+
+    .notes-textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* ---------- Empty state ---------- */
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .empty-state-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    /* ---------- Tab panel ---------- */
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* ---------- SVG Ring ---------- */
+    .ring-svg { transform: rotate(-90deg); }
+    .ring-bg   { fill: none; stroke: var(--border); stroke-width: 4; }
+    .ring-fill { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 720px) {
+      .sidebar { width: 200px; min-width: 200px; }
+      .content { padding: 20px 16px 40px; }
+      .topbar  { padding: 0 16px; gap: 10px; }
+      .search-input { width: 150px; }
+      .summary-card { gap: 16px; padding: 16px; }
+    }
+
+    @media (max-width: 540px) {
+      .shell { flex-direction: column; height: auto; overflow: auto; }
+      .sidebar { width: 100%; min-width: 0; flex-direction: row; flex-wrap: wrap; padding: 12px; }
+      .sidebar-header { border: none; padding: 0 8px 0 0; }
+      .sidebar-nav { display: flex; flex-direction: row; flex-wrap: wrap; gap: 4px; padding: 0; }
+      .nav-label { display: none; }
+      .main { overflow-y: visible; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     SHELL
+============================================================ -->
+<div class="shell">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" role="navigation" aria-label="Dashboard navigation">
+
+    <div class="sidebar-header">
+      <div class="sidebar-logo">Kaladé × Sunny Dé</div>
+      <div class="sidebar-subtitle">Alana · Brand Coordinator</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Navigation</div>
+
+      <!-- Tab buttons — icon | label | mini progress % -->
+      <button class="nav-btn active" data-tab="recurring" onclick="switchTab('recurring')">
+        <span class="nav-icon">🔁</span>
+        Recurring Tasks
+        <span class="nav-progress-mini" id="mini-recurring">0%</span>
+      </button>
+
+      <button class="nav-btn" data-tab="signins" onclick="switchTab('signins')">
+        <span class="nav-icon">🔑</span>
+        Sign Ins &amp; Docs
+        <span class="nav-progress-mini" id="mini-signins">0%</span>
+      </button>
+
+      <button class="nav-btn" data-tab="days030" onclick="switchTab('days030')">
+        <span class="nav-icon">🌱</span>
+        0–30 Days
+        <span class="nav-progress-mini" id="mini-days030">0%</span>
+      </button>
+
+      <button class="nav-btn" data-tab="days3160" onclick="switchTab('days3160')">
+        <span class="nav-icon">📈</span>
+        31–60 Days
+        <span class="nav-progress-mini" id="mini-days3160">0%</span>
+      </button>
+
+      <button class="nav-btn" data-tab="days6190" onclick="switchTab('days6190')">
+        <span class="nav-icon">🏆</span>
+        61–90 Days
+        <span class="nav-progress-mini" id="mini-days6190">0%</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-text">Alana · Brand Coordinator · 2026</div>
+      <div class="sidebar-footer-text" style="margin-top:4px; font-size:10px; color:rgba(255,255,255,0.13);">Check-ins: Mon &amp; Fri with Amy</div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Recurring Tasks</div>
+      <div class="topbar-spacer"></div>
+
+      <!-- Search -->
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search tasks…"
+          id="search-input"
+          oninput="applyFilters()"
+          aria-label="Search tasks"
+        />
+      </div>
+
+      <!-- Filter -->
+      <div class="filter-group" role="group" aria-label="Filter tasks">
+        <button class="filter-btn active" data-filter="all"        onclick="setFilter('all')">All</button>
+        <button class="filter-btn"        data-filter="incomplete" onclick="setFilter('incomplete')">Incomplete</button>
+        <button class="filter-btn"        data-filter="complete"   onclick="setFilter('complete')">Complete</button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- ── OVERALL SUMMARY CARD ── -->
+      <div class="summary-card" id="summary-card">
+        <!-- Ring chart -->
+        <div class="summary-ring-wrap">
+          <svg class="ring-svg" width="56" height="56" viewBox="0 0 56 56">
+            <circle class="ring-bg"   cx="28" cy="28" r="22"/>
+            <circle class="ring-fill" cx="28" cy="28" r="22"
+              stroke-dasharray="138.23"
+              stroke-dashoffset="138.23"
+              id="ring-fill-circle"/>
+          </svg>
+          <div class="summary-ring-label">Overall</div>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <!-- Stats -->
+        <div class="summary-stat">
+          <span class="summary-stat-number" id="stat-total">0</span>
+          <span class="summary-stat-label">Total</span>
+        </div>
+        <div class="summary-stat">
+          <span class="summary-stat-number" id="stat-complete">0</span>
+          <span class="summary-stat-label">Complete</span>
+        </div>
+        <div class="summary-stat">
+          <span class="summary-stat-number" id="stat-inprogress">0</span>
+          <span class="summary-stat-label">In Progress</span>
+        </div>
+        <div class="summary-stat">
+          <span class="summary-stat-number" id="stat-remaining">0</span>
+          <span class="summary-stat-label">Remaining</span>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-stat">
+          <span class="summary-stat-number" id="stat-pct" style="color: var(--accent)">0%</span>
+          <span class="summary-stat-label">Completion</span>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           TAB 1 · RECURRING TASKS
+      ══════════════════════════════════════════════ -->
+      <div class="tab-panel active" id="panel-recurring">
+
+        <div class="tab-header">
+          <div class="tab-header-top">
+            <div>
+              <div class="tab-title">Recurring Tasks</div>
+              <div class="tab-meta">Ongoing responsibilities — Daily, Weekly, Monthly &amp; Adhoc</div>
+            </div>
+            <button class="reset-btn" onclick="resetTab('recurring')">↺ Reset tab</button>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="pb-recurring" style="width:0%"></div>
+          </div>
+          <div class="progress-label" id="pl-recurring">0 of 0 tasks complete</div>
+        </div>
+
+        <!-- Daily -->
+        <div class="section-group tint-daily" id="group-recurring-daily">
+          <div class="section-group-header">
+            <span class="section-group-dot dot-daily"></span>
+            <span class="section-group-title">Daily</span>
+            <span class="section-group-count" id="count-recurring-daily"></span>
+          </div>
+          <div class="tasks-container" data-group="recurring-daily">
+            <!-- Tasks injected by JS -->
+          </div>
+        </div>
+
+        <!-- Weekly -->
+        <div class="section-group tint-weekly" id="group-recurring-weekly">
+          <div class="section-group-header">
+            <span class="section-group-dot dot-weekly"></span>
+            <span class="section-group-title">Weekly</span>
+            <span class="section-group-count" id="count-recurring-weekly"></span>
+          </div>
+          <div class="tasks-container" data-group="recurring-weekly">
+          </div>
+        </div>
+
+        <!-- Monthly -->
+        <div class="section-group tint-monthly" id="group-recurring-monthly">
+          <div class="section-group-header">
+            <span class="section-group-dot dot-monthly"></span>
+            <span class="section-group-title">Monthly</span>
+            <span class="section-group-count" id="count-recurring-monthly"></span>
+          </div>
+          <div class="tasks-container" data-group="recurring-monthly">
+          </div>
+        </div>
+
+        <!-- Adhoc -->
+        <div class="section-group tint-adhoc" id="group-recurring-adhoc">
+          <div class="section-group-header">
+            <span class="section-group-dot dot-adhoc"></span>
+            <span class="section-group-title">Adhoc</span>
+            <span class="section-group-count" id="count-recurring-adhoc"></span>
+          </div>
+          <div class="tasks-container" data-group="recurring-adhoc">
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="notes-section">
+          <div class="notes-label">Notes</div>
+          <textarea class="notes-textarea" id="notes-recurring" placeholder="Add notes for this tab…" oninput="saveNotes('recurring')"></textarea>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           TAB 2 · SIGN INS & DOCUMENTS
+      ══════════════════════════════════════════════ -->
+      <div class="tab-panel" id="panel-signins">
+
+        <div class="tab-header">
+          <div class="tab-header-top">
+            <div>
+              <div class="tab-title">Sign Ins &amp; Documents</div>
+              <div class="tab-meta">Systems access, document review &amp; training familiarisation</div>
+            </div>
+            <button class="reset-btn" onclick="resetTab('signins')">↺ Reset tab</button>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="pb-signins" style="width:0%"></div>
+          </div>
+          <div class="progress-label" id="pl-signins">0 of 0 tasks complete</div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Systems Access</div>
+          <div class="tasks-container" data-group="signins-systems"></div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Documents &amp; Spreadsheets</div>
+          <div class="tasks-container" data-group="signins-docs"></div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Training / Process Familiarity</div>
+          <div class="tasks-container" data-group="signins-training"></div>
+        </div>
+
+        <div class="notes-section">
+          <div class="notes-label">Notes</div>
+          <textarea class="notes-textarea" id="notes-signins" placeholder="Add notes for this tab…" oninput="saveNotes('signins')"></textarea>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           TAB 3 · 0–30 DAYS
+      ══════════════════════════════════════════════ -->
+      <div class="tab-panel" id="panel-days030">
+
+        <div class="tab-header">
+          <div class="tab-header-top">
+            <div>
+              <div class="tab-title">0–30 Days</div>
+              <div class="tab-meta">Onboarding, orientation &amp; early exposure</div>
+            </div>
+            <button class="reset-btn" onclick="resetTab('days030')">↺ Reset tab</button>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="pb-days030" style="width:0%"></div>
+          </div>
+          <div class="progress-label" id="pl-days030">0 of 0 tasks complete</div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Onboarding &amp; Learning</div>
+          <div class="tasks-container" data-group="days030-onboarding"></div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Content &amp; Social</div>
+          <div class="tasks-container" data-group="days030-content"></div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Training</div>
+          <div class="tasks-container" data-group="days030-training"></div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Campaign Exposure</div>
+          <div class="tasks-container" data-group="days030-campaign"></div>
+        </div>
+
+        <div class="notes-section">
+          <div class="notes-label">Notes</div>
+          <textarea class="notes-textarea" id="notes-days030" placeholder="Add notes for this tab…" oninput="saveNotes('days030')"></textarea>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           TAB 4 · 31–60 DAYS
+      ══════════════════════════════════════════════ -->
+      <div class="tab-panel" id="panel-days3160">
+
+        <div class="tab-header">
+          <div class="tab-header-top">
+            <div>
+              <div class="tab-title">31–60 Days</div>
+              <div class="tab-meta">Independent execution, UGC coordination &amp; campaign support</div>
+            </div>
+            <button class="reset-btn" onclick="resetTab('days3160')">↺ Reset tab</button>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="pb-days3160" style="width:0%"></div>
+          </div>
+          <div class="progress-label" id="pl-days3160">0 of 0 tasks complete</div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Execution</div>
+          <div class="tasks-container" data-group="days3160-execution"></div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">UGC &amp; Influencer</div>
+          <div class="tasks-container" data-group="days3160-ugc"></div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Campaign Support</div>
+          <div class="tasks-container" data-group="days3160-campaign"></div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Training</div>
+          <div class="tasks-container" data-group="days3160-training"></div>
+        </div>
+
+        <div class="notes-section">
+          <div class="notes-label">Notes</div>
+          <textarea class="notes-textarea" id="notes-days3160" placeholder="Add notes for this tab…" oninput="saveNotes('days3160')"></textarea>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           TAB 5 · 61–90 DAYS
+      ══════════════════════════════════════════════ -->
+      <div class="tab-panel" id="panel-days6190">
+
+        <div class="tab-header">
+          <div class="tab-header-top">
+            <div>
+              <div class="tab-title">61–90 Days</div>
+              <div class="tab-meta">Ownership, performance review &amp; systems confidence</div>
+            </div>
+            <button class="reset-btn" onclick="resetTab('days6190')">↺ Reset tab</button>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="pb-days6190" style="width:0%"></div>
+          </div>
+          <div class="progress-label" id="pl-days6190">0 of 0 tasks complete</div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Ownership</div>
+          <div class="tasks-container" data-group="days6190-ownership"></div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Campaign Execution</div>
+          <div class="tasks-container" data-group="days6190-campaign"></div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Performance &amp; Improvement</div>
+          <div class="tasks-container" data-group="days6190-performance"></div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Systems Confidence</div>
+          <div class="tasks-container" data-group="days6190-systems"></div>
+        </div>
+
+        <div class="phase-group">
+          <div class="phase-group-header">Training</div>
+          <div class="tasks-container" data-group="days6190-training"></div>
+        </div>
+
+        <div class="notes-section">
+          <div class="notes-label">Notes</div>
+          <textarea class="notes-textarea" id="notes-days6190" placeholder="Add notes for this tab…" oninput="saveNotes('days6190')"></textarea>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /shell -->
+
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+
+/* ============================================================
+   DATA — All task definitions
+   Each task: { id, title, desc, owner, group }
+   Status is stored separately in localStorage.
+============================================================ */
+const TASK_DATA = [
+
+  /* ── RECURRING · DAILY ── */
+  { id:'r-d1', title:'Review 2026 Marketing Calendar — Kaladé', desc:'Check for upcoming campaigns, events, and content due dates for Kaladé.', owner:'Alana', group:'recurring-daily' },
+  { id:'r-d2', title:'Review 2026 Marketing Calendar — Sunny Dé', desc:'Check for upcoming campaigns, events, and content due dates for Sunny Dé.', owner:'Alana', group:'recurring-daily' },
+  { id:'r-d3', title:'Community engagement', desc:'Engage with the brand community across both brands — respond, react, connect.', owner:'Alana', group:'recurring-daily' },
+  { id:'r-d4', title:'Responding to comments', desc:'Reply to comments across Instagram, TikTok, and Facebook for both brands.', owner:'Alana', group:'recurring-daily' },
+  { id:'r-d5', title:'Resharing stories and tags', desc:'Reshare brand tags and customer stories to brand accounts.', owner:'Alana', group:'recurring-daily' },
+
+  /* ── RECURRING · WEEKLY ── */
+  { id:'r-w0a', title:'Monday team meeting — 9:00am', desc:'Weekly all-hands team meeting every Monday at 9:00am.', owner:'Team', group:'recurring-weekly' },
+  { id:'r-w0b', title:'Brand, UGC &amp; Marketing meeting — Monday morning', desc:'Monday morning Brand, UGC, and Marketing planning meeting.', owner:'Team', group:'recurring-weekly' },
+  { id:'r-w0c', title:'Weekly check-in with Amy — Monday', desc:'Monday check-in with Amy to align on priorities and review progress for the week ahead.', owner:'Amy', group:'recurring-weekly' },
+  { id:'r-w0d', title:'Weekly check-in with Amy — Friday', desc:'Friday wrap-up check-in with Amy to review the week, wins, and anything to carry forward.', owner:'Amy', group:'recurring-weekly' },
+  { id:'r-w1', title:'1 × weekly Facebook Group post', desc:'Drive engagement in the Facebook group with a post that sparks conversation.', owner:'Alana', group:'recurring-weekly' },
+  { id:'r-w2', title:'1 × weekly TikTok Live', desc:'Go live on TikTok — drive engagement, be fun, connect with the audience.', owner:'Alana', group:'recurring-weekly' },
+  { id:'r-w3', title:'3 × weekly IG Stories', desc:'Include: product focus, ingredient focus, polls, reviews, and customer spotlight.', owner:'Alana', group:'recurring-weekly' },
+  { id:'r-w4', title:'2 × weekly IG IYKYK Besties Chat', desc:'Drive engagement and loyalty within the IYKYK Besties Chat community.', owner:'Alana', group:'recurring-weekly' },
+  { id:'r-w5', title:'Share to IG Stories — drive IYKYK joins', desc:'Share once a week to drive people to join the IYKYK Besties Chat.', owner:'Alana', group:'recurring-weekly' },
+  { id:'r-w6', title:'Monday weekly reporting', desc:'Capture key metrics across socials — what\'s working, what\'s not.', owner:'Alana', group:'recurring-weekly' },
+  { id:'r-w7', title:'Weekly creative review meeting — Tuesdays 10:00am', desc:'Tuesday 10:00am — review which creatives are performing well across both brands.', owner:'Team', group:'recurring-weekly' },
+
+  /* ── RECURRING · MONTHLY ── */
+  { id:'r-m1', title:'Review content performance and recurring themes', desc:'Analyse monthly content trends across both brands and identify what to iterate on.', owner:'Alana', group:'recurring-monthly' },
+  { id:'r-m2', title:'Review influencer / UGC activity and gaps', desc:'Assess creator output and identify gaps in coverage across Kaladé and Sunny Dé.', owner:'Alana', group:'recurring-monthly' },
+  { id:'r-m3', title:'Review top-performing creative angles and campaign learnings', desc:'Document key creative insights from both brands to carry into the next cycle.', owner:'Alana', group:'recurring-monthly' },
+
+  /* ── RECURRING · ADHOC ── */
+  { id:'r-a1', title:'Update PR Spreadsheet — Kaladé', desc:'Log new PR sends, outcomes, and gifting activity for Kaladé.', owner:'Alana', group:'recurring-adhoc' },
+  { id:'r-a2', title:'Update PR Spreadsheet — Sunny Dé', desc:'Log new PR sends, outcomes, and gifting activity for Sunny Dé.', owner:'Alana', group:'recurring-adhoc' },
+  { id:'r-a3', title:'Update UGC Spreadsheet — Kaladé', desc:'Track new UGC received, usage rights, and creator follow-ups for Kaladé.', owner:'Alana', group:'recurring-adhoc' },
+  { id:'r-a4', title:'Update UGC Spreadsheet — Sunny Dé', desc:'Track new UGC received, usage rights, and creator follow-ups for Sunny Dé.', owner:'Alana', group:'recurring-adhoc' },
+
+  /* ── SIGN INS · SYSTEMS ── */
+  { id:'s-s1', title:'Sign into brand@kalade.com email', desc:'Set up access and verify inbox is working.', owner:'Alana', group:'signins-systems' },
+  { id:'s-s2', title:'Sign into brand@sunnyde.com email', desc:'Set up access and verify inbox is working.', owner:'Alana', group:'signins-systems' },
+  { id:'s-s3', title:'Access social media accounts via work phone', desc:'Log into Instagram, TikTok, and Facebook via the work device. Get familiar with each platform across both brands.', owner:'Alana', group:'signins-systems' },
+  { id:'s-s4', title:'Sign into Shopify for Kaladé', desc:'Access the Kaladé Shopify store and familiarise with the admin.', owner:'Ashlin', group:'signins-systems' },
+  { id:'s-s5', title:'Sign into Shopify for Sunny Dé', desc:'Access the Sunny Dé Shopify store and familiarise with the admin.', owner:'Ashlin', group:'signins-systems' },
+  { id:'s-s6', title:'Sign into PVX', desc:'Access the PVX platform used for internal workflows.', owner:'Ashlin', group:'signins-systems' },
+  { id:'s-s7', title:'Sign into Notion', desc:'Access the team Notion workspace and review relevant pages for both brands.', owner:'Alana', group:'signins-systems' },
+  { id:'s-s8', title:'Access Canva (shared across both brands)', desc:'Confirm access to shared Canva workspace for Kaladé and Sunny Dé.', owner:'Alana', group:'signins-systems' },
+  { id:'s-s9', title:'Access Google Drive / shared drives for Kaladé', desc:'Confirm access to all relevant Kaladé folders.', owner:'Alana', group:'signins-systems' },
+  { id:'s-s10', title:'Access Google Drive / shared drives for Sunny Dé', desc:'Confirm access to all relevant Sunny Dé folders.', owner:'Alana', group:'signins-systems' },
+
+  /* ── SIGN INS · DOCS ── */
+  { id:'s-d1', title:'Review 2026 Marketing Plan – Kaladé', desc:'Read through the full Kaladé marketing plan and note key campaigns and milestones.', owner:'Alana', group:'signins-docs' },
+  { id:'s-d2', title:'Review 2026 Marketing Plan – Sunny Dé', desc:'Read through the full Sunny Dé marketing plan and note key campaigns and milestones.', owner:'Alana', group:'signins-docs' },
+  { id:'s-d3', title:'Review UGC Spreadsheet – Kaladé', desc:'Understand current UGC data structure and existing entries for Kaladé.', owner:'Alana', group:'signins-docs' },
+  { id:'s-d4', title:'Review UGC Spreadsheet – Sunny Dé', desc:'Understand current UGC data structure and existing entries for Sunny Dé.', owner:'Alana', group:'signins-docs' },
+  { id:'s-d5', title:'Review PR Spreadsheet – Kaladé', desc:'Understand current PR data structure and existing entries for Kaladé.', owner:'Alana', group:'signins-docs' },
+  { id:'s-d6', title:'Review PR Spreadsheet – Sunny Dé', desc:'Understand current PR data structure and existing entries for Sunny Dé.', owner:'Alana', group:'signins-docs' },
+
+  /* ── SIGN INS · TRAINING ── */
+  { id:'s-t1', title:'Learn how to access PR entry form submissions', desc:'Understand where form submissions land and how to retrieve them.', owner:'Ashlin', group:'signins-training' },
+  { id:'s-t2', title:'Learn how to input PR data into relevant spreadsheets', desc:'Follow the standard process for logging PR activity correctly for both brands.', owner:'Ashlin', group:'signins-training' },
+  { id:'s-t3', title:'Learn how to input UGC data into relevant spreadsheets', desc:'Follow the standard process for logging UGC correctly for both brands.', owner:'Ashlin', group:'signins-training' },
+  { id:'s-t4', title:'Complete Shopify training for creating orders for PR and UGC', desc:'Understand how to raise Shopify orders for gifting, PR, and UGC fulfilment across Kaladé and Sunny Dé.', owner:'Ashlin', group:'signins-training' },
+
+  /* ── 0–30 · ONBOARDING ── */
+  { id:'d0-o1', title:'Understand Kaladé and Sunny Dé brand tone and positioning', desc:'Review brand guidelines, voice documents, and existing content to internalise both brands.', owner:'Alana', group:'days030-onboarding' },
+  { id:'d0-o2', title:'Review product ranges — Kaladé', desc:'Become familiar with all current Kaladé SKUs, hero products, and new launches.', owner:'Alana', group:'days030-onboarding' },
+  { id:'d0-o3', title:'Review product ranges — Sunny Dé', desc:'Become familiar with all current Sunny Dé SKUs, hero products, and new launches.', owner:'Alana', group:'days030-onboarding' },
+  { id:'d0-o4', title:'Start to build out campaign calendar for April to May — Kaladé', desc:'Draft initial Kaladé campaign calendar based on the 2026 marketing plan.', owner:'Alana', group:'days030-onboarding' },
+  { id:'d0-o5', title:'Start to build out campaign calendar for April to May — Sunny Dé', desc:'Draft initial Sunny Dé campaign calendar based on the 2026 marketing plan.', owner:'Alana', group:'days030-onboarding' },
+  { id:'d0-o6', title:'Learn internal workflows and approval process', desc:'Understand how content is reviewed, approved, and published across both brands.', owner:'Ashlin', group:'days030-onboarding' },
+  { id:'d0-o7', title:'Set up ChatGPT for role-specific use', desc:'Configure ChatGPT with brand context and prompts relevant to the Brand Coordinator role for both brands.', owner:'Alana', group:'days030-onboarding' },
+  { id:'d0-o8', title:'Build content pillars', desc:'Define the core content pillars that will guide content planning across both brands.', owner:'Alana', group:'days030-onboarding' },
+  { id:'d0-o9', title:'Build communication strategy', desc:'Outline how each brand communicates across channels — tone, cadence, and priorities.', owner:'Alana', group:'days030-onboarding' },
+
+  /* ── 0–30 · CONTENT ── */
+  { id:'d0-c1', title:'Assist with content planning', desc:'Support the existing content plan for both brands and begin contributing ideas and structure.', owner:'Alana', group:'days030-content' },
+  { id:'d0-c2', title:'Begin filming and editing short-form content', desc:'Start producing short-form video content for Instagram and TikTok across both brands.', owner:'Alana', group:'days030-content' },
+  { id:'d0-c3', title:'Learn posting and scheduling process for social media', desc:'Understand the tools and process used to schedule and publish content.', owner:'Team', group:'days030-content' },
+  { id:'d0-c4', title:'Review past top-performing content — Kaladé', desc:'Analyse previous Kaladé posts across all channels to identify what has worked well.', owner:'Alana', group:'days030-content' },
+  { id:'d0-c5', title:'Review past top-performing content — Sunny Dé', desc:'Analyse previous Sunny Dé posts across all channels to identify what has worked well.', owner:'Alana', group:'days030-content' },
+
+  /* ── 0–30 · TRAINING ── */
+  { id:'d0-t1', title:'EE Community Building Strategies', desc:'Complete the Empowered Education module on community building.', owner:'Alana', group:'days030-training' },
+  { id:'d0-t2', title:'EE The 12 Conversations', desc:'Complete the module on the 12 key conversations framework.', owner:'Alana', group:'days030-training' },
+  { id:'d0-t3', title:'EE ChatGPT Setup', desc:'Complete the module on setting up and using ChatGPT effectively.', owner:'Alana', group:'days030-training' },
+  { id:'d0-t4', title:'EE Content Pillars', desc:'Complete the Content Pillars module.', owner:'Alana', group:'days030-training' },
+  { id:'d0-t5', title:'EE Communication Strategy', desc:'Complete the Communication Strategy module.', owner:'Alana', group:'days030-training' },
+  { id:'d0-t6', title:'EE The Influencer System', desc:'Complete the Influencer System module.', owner:'Alana', group:'days030-training' },
+  { id:'d0-t7', title:'EE The Productivity Boost', desc:'Complete the Productivity Boost module.', owner:'Alana', group:'days030-training' },
+
+  /* ── 0–30 · CAMPAIGN ── */
+  { id:'d0-ca1', title:'Observe live campaign execution', desc:'Shadow the execution of live campaigns across social, paid, influencer, and events for both brands.', owner:'Team', group:'days030-campaign' },
+  { id:'d0-ca2', title:'Support live campaign tasks and deliverables', desc:'Assist with day-to-day campaign tasks as directed by the team.', owner:'Alana', group:'days030-campaign' },
+  { id:'d0-ca3', title:'Become familiar with campaign timelines and expectations', desc:'Understand how campaigns are structured, deadlined, and measured across Kaladé and Sunny Dé.', owner:'Alana', group:'days030-campaign' },
+
+  /* ── 31–60 · EXECUTION ── */
+  { id:'d1-e1', title:'Plan and execute content aligned with campaign priorities — Kaladé', desc:'Take responsibility for Kaladé content planning that supports active campaigns.', owner:'Alana', group:'days3160-execution' },
+  { id:'d1-e2', title:'Plan and execute content aligned with campaign priorities — Sunny Dé', desc:'Take responsibility for Sunny Dé content planning that supports active campaigns.', owner:'Alana', group:'days3160-execution' },
+  { id:'d1-e3', title:'Film and edit content independently', desc:'Produce short-form content without close supervision across both brands.', owner:'Alana', group:'days3160-execution' },
+  { id:'d1-e4', title:'Maintain content calendar and deliverables', desc:'Keep the content calendar up to date for both brands and ensure deadlines are met.', owner:'Alana', group:'days3160-execution' },
+  { id:'d1-e5', title:'Continue building out campaign planning rhythm', desc:'Establish a consistent process for planning upcoming campaigns across Kaladé and Sunny Dé.', owner:'Alana', group:'days3160-execution' },
+
+  /* ── 31–60 · UGC ── */
+  { id:'d1-u1', title:'Brief UGC creators — Kaladé', desc:'Write and send briefs to Kaladé UGC creators for upcoming campaigns.', owner:'Alana', group:'days3160-ugc' },
+  { id:'d1-u2', title:'Brief UGC creators — Sunny Dé', desc:'Write and send briefs to Sunny Dé UGC creators for upcoming campaigns.', owner:'Alana', group:'days3160-ugc' },
+  { id:'d1-u3', title:'Review creator content', desc:'Review submitted content against the brief and provide feedback across both brands.', owner:'Alana', group:'days3160-ugc' },
+  { id:'d1-u4', title:'Support influencer coordination', desc:'Assist with managing influencer relationships and timelines across both brands.', owner:'Alana', group:'days3160-ugc' },
+  { id:'d1-u5', title:'Ensure creator output aligns with campaign goals', desc:'Cross-check creator content against campaign messaging and objectives for Kaladé and Sunny Dé.', owner:'Alana', group:'days3160-ugc' },
+
+  /* ── 31–60 · CAMPAIGN ── */
+  { id:'d1-c1', title:'Assist in campaign execution across channels', desc:'Support multi-channel campaign activity across social, email, and influencer for both brands.', owner:'Team', group:'days3160-campaign' },
+  { id:'d1-c2', title:'Maintain timelines and asset organisation', desc:'Ensure all campaign assets are filed, named, and delivered on schedule across Kaladé and Sunny Dé.', owner:'Alana', group:'days3160-campaign' },
+  { id:'d1-c3', title:'Contribute campaign ideas and content hooks', desc:'Bring fresh ideas and creative angles to campaign planning sessions.', owner:'Alana', group:'days3160-campaign' },
+
+  /* ── 31–60 · TRAINING ── */
+  { id:'d1-t1', title:'EE Content Pillar Ads', desc:'Complete the Content Pillar Ads module.', owner:'Alana', group:'days3160-training' },
+  { id:'d1-t2', title:'EE The Creative Catalyst', desc:'Complete The Creative Catalyst module.', owner:'Alana', group:'days3160-training' },
+  { id:'d1-t3', title:'Begin PVX training with Ashlin', desc:'Start structured PVX training sessions led by Ashlin.', owner:'Ashlin', group:'days3160-training' },
+  { id:'d1-t4', title:'Attend weekly PVX training sessions thereafter', desc:'Continue attending weekly PVX training to build system confidence.', owner:'Ashlin', group:'days3160-training' },
+
+  /* ── 61–90 · OWNERSHIP ── */
+  { id:'d2-o1', title:'Own organic social execution — Kaladé', desc:'Take full ownership of Kaladé organic social strategy and day-to-day execution.', owner:'Alana', group:'days6190-ownership' },
+  { id:'d2-o2', title:'Own organic social execution — Sunny Dé', desc:'Take full ownership of Sunny Dé organic social strategy and day-to-day execution.', owner:'Alana', group:'days6190-ownership' },
+  { id:'d2-o3', title:'Manage content end-to-end', desc:'Handle all stages from ideation through to publication independently across both brands.', owner:'Alana', group:'days6190-ownership' },
+  { id:'d2-o4', title:'Confidently execute short-form content aligned with campaigns', desc:'Produce and publish short-form content that is on-brand and campaign-relevant for both brands.', owner:'Alana', group:'days6190-ownership' },
+
+  /* ── 61–90 · CAMPAIGN ── */
+  { id:'d2-ca1', title:'Coordinate campaign deliverables across channels — Kaladé', desc:'Manage Kaladé cross-channel deliverables independently, ensuring alignment.', owner:'Alana', group:'days6190-campaign' },
+  { id:'d2-ca2', title:'Coordinate campaign deliverables across channels — Sunny Dé', desc:'Manage Sunny Dé cross-channel deliverables independently, ensuring alignment.', owner:'Alana', group:'days6190-campaign' },
+  { id:'d2-ca3', title:'Manage timelines independently', desc:'Own campaign timelines for both brands and proactively flag risks or delays.', owner:'Alana', group:'days6190-campaign' },
+  { id:'d2-ca4', title:'Ensure deliverables are completed on time', desc:'Maintain accountability for all content and campaign outputs across Kaladé and Sunny Dé.', owner:'Alana', group:'days6190-campaign' },
+
+  /* ── 61–90 · PERFORMANCE ── */
+  { id:'d2-p1', title:'Review content performance — Kaladé', desc:'Analyse social and campaign metrics for Kaladé.', owner:'Alana', group:'days6190-performance' },
+  { id:'d2-p2', title:'Review content performance — Sunny Dé', desc:'Analyse social and campaign metrics for Sunny Dé.', owner:'Alana', group:'days6190-performance' },
+  { id:'d2-p3', title:'Suggest and apply improvements based on results', desc:'Use data from both brands to inform content direction and make tangible adjustments.', owner:'Alana', group:'days6190-performance' },
+  { id:'d2-p4', title:'Refine content direction based on learnings', desc:'Update content pillars and creative angles for both brands based on performance insights.', owner:'Alana', group:'days6190-performance' },
+
+  /* ── 61–90 · SYSTEMS ── */
+  { id:'d2-sy1', title:'Confident using Shopify — Kaladé', desc:'Navigate Kaladé Shopify for orders, PR, and UGC without support.', owner:'Alana', group:'days6190-systems' },
+  { id:'d2-sy2', title:'Confident using Shopify — Sunny Dé', desc:'Navigate Sunny Dé Shopify for orders, PR, and UGC without support.', owner:'Alana', group:'days6190-systems' },
+  { id:'d2-sy3', title:'Confident using PVX', desc:'Use PVX for relevant workflows without support.', owner:'Alana', group:'days6190-systems' },
+  { id:'d2-sy4', title:'Confident using Notion', desc:'Navigate Notion for documentation and team collaboration across both brands.', owner:'Alana', group:'days6190-systems' },
+  { id:'d2-sy5', title:'Confident using internal spreadsheets and trackers', desc:'Independently maintain and update all internal spreadsheets (PR, UGC, etc) for Kaladé and Sunny Dé.', owner:'Alana', group:'days6190-systems' },
+
+  /* ── 61–90 · TRAINING ── */
+  { id:'d2-t1', title:'EE Influencer Amplification', desc:'Complete the Influencer Amplification module.', owner:'Alana', group:'days6190-training' },
+];
+
+/* ============================================================
+   TAB CONFIG — maps tabId → { title, panelId, groups[] }
+============================================================ */
+const TABS = {
+  recurring: {
+    title: 'Recurring Tasks',
+    groups: ['recurring-daily','recurring-weekly','recurring-monthly','recurring-adhoc']
+  },
+  signins: {
+    title: 'Sign Ins & Documents',
+    groups: ['signins-systems','signins-docs','signins-training']
+  },
+  days030: {
+    title: '0–30 Days',
+    groups: ['days030-onboarding','days030-content','days030-training','days030-campaign']
+  },
+  days3160: {
+    title: '31–60 Days',
+    groups: ['days3160-execution','days3160-ugc','days3160-campaign','days3160-training']
+  },
+  days6190: {
+    title: '61–90 Days',
+    groups: ['days6190-ownership','days6190-campaign','days6190-performance','days6190-systems','days6190-training']
+  }
+};
+
+/* ============================================================
+   STATE
+============================================================ */
+let currentTab    = 'recurring';
+let currentFilter = 'all';
+let searchQuery   = '';
+
+/* Statuses: 'not-started' | 'in-progress' | 'complete' */
+let statuses = {};
+
+/* ============================================================
+   localStorage helpers
+============================================================ */
+const LS_STATUS_KEY = 'bc_dashboard_statuses_v1';
+const LS_NOTES_KEY  = 'bc_dashboard_notes_v1';
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(LS_STATUS_KEY);
+    if (raw) statuses = JSON.parse(raw);
+  } catch(e) {}
+  // default all tasks to not-started if missing
+  TASK_DATA.forEach(t => {
+    if (!statuses[t.id]) statuses[t.id] = 'not-started';
+  });
+}
+
+function saveStatuses() {
+  localStorage.setItem(LS_STATUS_KEY, JSON.stringify(statuses));
+}
+
+function loadNotes(tabId) {
+  try {
+    const raw = localStorage.getItem(LS_NOTES_KEY);
+    const notes = raw ? JSON.parse(raw) : {};
+    return notes[tabId] || '';
+  } catch(e) { return ''; }
+}
+
+function saveNotes(tabId) {
+  try {
+    const raw = localStorage.getItem(LS_NOTES_KEY);
+    const notes = raw ? JSON.parse(raw) : {};
+    notes[tabId] = document.getElementById('notes-' + tabId).value;
+    localStorage.setItem(LS_NOTES_KEY, JSON.stringify(notes));
+  } catch(e) {}
+}
+
+/* ============================================================
+   RENDER
+============================================================ */
+
+/* Build the HTML for a single task card */
+function buildTaskCard(task) {
+  const status  = statuses[task.id] || 'not-started';
+  const checked = status === 'complete';
+  const cardClass = checked ? 'task-card is-complete' : 'task-card';
+
+  const badgeLabel = {
+    'not-started': 'Not Started',
+    'in-progress': 'In Progress',
+    'complete':    'Complete'
+  }[status];
+
+  return `
+    <div class="${cardClass}" id="card-${task.id}" data-id="${task.id}" data-title="${escapeAttr(task.title)}">
+      <input
+        type="checkbox"
+        class="task-checkbox"
+        id="chk-${task.id}"
+        ${checked ? 'checked' : ''}
+        onchange="toggleTask('${task.id}', this.checked)"
+        aria-label="${escapeAttr(task.title)}"
+      />
+      <div class="task-body">
+        <div class="task-top">
+          <span class="task-title">${escapeHtml(task.title)}</span>
+        </div>
+        ${task.desc ? `<div class="task-desc">${escapeHtml(task.desc)}</div>` : ''}
+        <div class="task-meta">
+          ${task.owner ? `<span class="task-owner">👤 ${escapeHtml(task.owner)}</span>` : ''}
+          <span
+            class="status-badge ${status}"
+            id="badge-${task.id}"
+            onclick="cycleStatus('${task.id}')"
+            title="Click to cycle status"
+          >${badgeLabel}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* Render all task containers */
+function renderAll() {
+  TASK_DATA.forEach(task => {
+    // tasks are rendered into their group containers
+  });
+
+  // For each group container, inject tasks
+  const containers = document.querySelectorAll('.tasks-container');
+  containers.forEach(container => {
+    const groupId = container.getAttribute('data-group');
+    const tasks   = TASK_DATA.filter(t => t.group === groupId);
+    container.innerHTML = tasks.map(buildTaskCard).join('');
+  });
+
+  // Update counts for recurring groups
+  ['recurring-daily','recurring-weekly','recurring-monthly','recurring-adhoc'].forEach(g => {
+    const el = document.getElementById('count-' + g);
+    if (el) {
+      const tasks   = TASK_DATA.filter(t => t.group === g);
+      const done    = tasks.filter(t => statuses[t.id] === 'complete').length;
+      el.textContent = `${done}/${tasks.length}`;
+    }
+  });
+
+  updateProgressBars();
+  updateSummaryCard();
+  loadAllNotes();
+  applyFilters();
+}
+
+/* ============================================================
+   PROGRESS BARS
+============================================================ */
+function getTabProgress(tabId) {
+  const groups  = TABS[tabId].groups;
+  const tasks   = TASK_DATA.filter(t => groups.includes(t.group));
+  const done    = tasks.filter(t => statuses[t.id] === 'complete').length;
+  const total   = tasks.length;
+  const pct     = total === 0 ? 0 : Math.round((done / total) * 100);
+  return { done, total, pct };
+}
+
+function updateProgressBars() {
+  Object.keys(TABS).forEach(tabId => {
+    const { done, total, pct } = getTabProgress(tabId);
+    const pb  = document.getElementById('pb-' + tabId);
+    const pl  = document.getElementById('pl-' + tabId);
+    const mini = document.getElementById('mini-' + tabId);
+    if (pb)   pb.style.width = pct + '%';
+    if (pl)   pl.textContent = `${done} of ${total} tasks complete`;
+    if (mini) mini.textContent = pct + '%';
+  });
+}
+
+/* ============================================================
+   SUMMARY CARD
+============================================================ */
+function updateSummaryCard() {
+  const total      = TASK_DATA.length;
+  const complete   = TASK_DATA.filter(t => statuses[t.id] === 'complete').length;
+  const inprogress = TASK_DATA.filter(t => statuses[t.id] === 'in-progress').length;
+  const remaining  = total - complete;
+  const pct        = total === 0 ? 0 : Math.round((complete / total) * 100);
+
+  document.getElementById('stat-total').textContent      = total;
+  document.getElementById('stat-complete').textContent   = complete;
+  document.getElementById('stat-inprogress').textContent = inprogress;
+  document.getElementById('stat-remaining').textContent  = remaining;
+  document.getElementById('stat-pct').textContent        = pct + '%';
+
+  // Ring
+  const circumference = 138.23;
+  const offset = circumference - (pct / 100) * circumference;
+  document.getElementById('ring-fill-circle').style.strokeDashoffset = offset;
+}
+
+/* ============================================================
+   TASK INTERACTIONS
+============================================================ */
+
+/* Checkbox toggled */
+function toggleTask(taskId, checked) {
+  statuses[taskId] = checked ? 'complete' : 'not-started';
+  saveStatuses();
+  updateTaskCard(taskId);
+  updateProgressBars();
+  updateSummaryCard();
+}
+
+/* Click badge → cycle status */
+function cycleStatus(taskId) {
+  const current = statuses[taskId] || 'not-started';
+  const next = {
+    'not-started': 'in-progress',
+    'in-progress':  'complete',
+    'complete':     'not-started'
+  }[current];
+  statuses[taskId] = next;
+
+  // Sync checkbox
+  const chk = document.getElementById('chk-' + taskId);
+  if (chk) chk.checked = (next === 'complete');
+
+  saveStatuses();
+  updateTaskCard(taskId);
+  updateProgressBars();
+  updateSummaryCard();
+}
+
+/* Re-render a single card's status indicators */
+function updateTaskCard(taskId) {
+  const card  = document.getElementById('card-' + taskId);
+  const badge = document.getElementById('badge-' + taskId);
+  if (!card || !badge) return;
+
+  const status = statuses[taskId] || 'not-started';
+  const labels = { 'not-started':'Not Started', 'in-progress':'In Progress', 'complete':'Complete' };
+
+  card.className  = 'task-card' + (status === 'complete' ? ' is-complete' : '');
+  badge.className = 'status-badge ' + status;
+  badge.textContent = labels[status];
+
+  // Update recurring group counts
+  const task = TASK_DATA.find(t => t.id === taskId);
+  if (task && task.group.startsWith('recurring-')) {
+    const suffix  = task.group; // e.g. 'recurring-daily'
+    const el      = document.getElementById('count-' + suffix);
+    if (el) {
+      const groupTasks = TASK_DATA.filter(t => t.group === suffix);
+      const done       = groupTasks.filter(t => statuses[t.id] === 'complete').length;
+      el.textContent   = `${done}/${groupTasks.length}`;
+    }
+  }
+}
+
+/* ============================================================
+   RESET TAB
+============================================================ */
+function resetTab(tabId) {
+  if (!confirm('Reset all tasks in this tab to "Not Started"? This cannot be undone.')) return;
+  const groups = TABS[tabId].groups;
+  const tasks  = TASK_DATA.filter(t => groups.includes(t.group));
+  tasks.forEach(t => {
+    statuses[t.id] = 'not-started';
+    const chk = document.getElementById('chk-' + t.id);
+    if (chk) chk.checked = false;
+    updateTaskCard(t.id);
+  });
+  saveStatuses();
+  updateProgressBars();
+  updateSummaryCard();
+}
+
+/* ============================================================
+   TAB SWITCHING
+============================================================ */
+function switchTab(tabId) {
+  currentTab = tabId;
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tabId).classList.add('active');
+
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
+  });
+
+  document.getElementById('topbar-title').textContent = TABS[tabId].title;
+
+  // Reset filter + search
+  currentFilter = 'all';
+  searchQuery   = '';
+  document.getElementById('search-input').value = '';
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-filter') === 'all');
+  });
+
+  applyFilters();
+}
+
+/* ============================================================
+   FILTER & SEARCH
+============================================================ */
+function setFilter(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-filter') === filter);
+  });
+  applyFilters();
+}
+
+function applyFilters() {
+  searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+
+  const allCards = document.querySelectorAll(`#panel-${currentTab} .task-card`);
+  let visibleCount = 0;
+
+  allCards.forEach(card => {
+    const id     = card.getAttribute('data-id');
+    const title  = card.getAttribute('data-title').toLowerCase();
+    const status = statuses[id] || 'not-started';
+    const isDone = status === 'complete';
+
+    const matchesFilter =
+      currentFilter === 'all' ||
+      (currentFilter === 'complete'   && isDone) ||
+      (currentFilter === 'incomplete' && !isDone);
+
+    const matchesSearch = searchQuery === '' || title.includes(searchQuery);
+
+    const visible = matchesFilter && matchesSearch;
+    card.style.display = visible ? '' : 'none';
+    if (visible) visibleCount++;
+  });
+
+  // Show/hide empty states per group
+  document.querySelectorAll(`#panel-${currentTab} .tasks-container`).forEach(container => {
+    const groupId = container.getAttribute('data-group');
+    const groupCards = container.querySelectorAll('.task-card');
+    const groupVisible = Array.from(groupCards).some(c => c.style.display !== 'none');
+    // show/hide the whole section-group or phase-group
+    const wrapper = container.closest('.section-group, .phase-group');
+    if (wrapper) wrapper.style.display = groupVisible ? '' : 'none';
+  });
+}
+
+/* ============================================================
+   NOTES
+============================================================ */
+function loadAllNotes() {
+  Object.keys(TABS).forEach(tabId => {
+    const el = document.getElementById('notes-' + tabId);
+    if (el) el.value = loadNotes(tabId);
+  });
+}
+
+/* ============================================================
+   HELPERS
+============================================================ */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function escapeAttr(str) {
+  return String(str).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  loadFromStorage();
+  renderAll();
+});
+</script>
+</body>
+</html>
